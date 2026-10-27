@@ -84,6 +84,20 @@ final class InputMethodState {
             }
         }
     }
+    var skipVietnameseForPrefixes: Bool = Defaults.skipVietnameseForPrefixes {
+        didSet { handleRuntimeSettingDidChange(oldValue: oldValue, newValue: skipVietnameseForPrefixes) }
+    }
+    var skipVietnamesePrefixes: [String] = PHTVEnglishPrefixes.defaults {
+        didSet {
+            handleObservedChange(oldValue: oldValue, newValue: skipVietnamesePrefixes) {
+                SettingsObserver.shared.suspendNotifications()
+                UserDefaults.standard.set(
+                    PHTVEnglishPrefixes.normalized(self.skipVietnamesePrefixes),
+                    forKey: UserDefaultsKey.skipVietnamesePrefixes)
+                NotificationCenter.default.post(name: NotificationName.phtvSettingsChanged, object: nil)
+            }
+        }
+    }
     var quickStartConsonant: Bool = false {
         didSet { handleRuntimeSettingDidChange(oldValue: oldValue, newValue: quickStartConsonant) }
     }
@@ -266,6 +280,12 @@ final class InputMethodState {
         )
         customConsonants = PHTVCustomConsonants.normalized(
             defaults.stringArray(forKey: UserDefaultsKey.customConsonants) ?? PHTVCustomConsonants.defaults)
+        skipVietnameseForPrefixes = defaults.bool(
+            forKey: UserDefaultsKey.skipVietnameseForPrefixes,
+            default: Defaults.skipVietnameseForPrefixes
+        )
+        skipVietnamesePrefixes = PHTVEnglishPrefixes.normalized(
+            defaults.stringArray(forKey: UserDefaultsKey.skipVietnamesePrefixes) ?? PHTVEnglishPrefixes.defaults)
         quickStartConsonant = defaults.bool(
             forKey: UserDefaultsKey.quickStartConsonant,
             default: Defaults.quickStartConsonant
@@ -326,6 +346,8 @@ final class InputMethodState {
         defaults.set(upperCaseFirstChar, forKey: UserDefaultsKey.upperCaseFirstChar)
         defaults.set(allowConsonantZFWJ, forKey: UserDefaultsKey.allowConsonantZFWJ)
         defaults.set(customConsonants, forKey: UserDefaultsKey.customConsonants)
+        defaults.set(skipVietnameseForPrefixes, forKey: UserDefaultsKey.skipVietnameseForPrefixes)
+        defaults.set(skipVietnamesePrefixes, forKey: UserDefaultsKey.skipVietnamesePrefixes)
         defaults.set(quickStartConsonant, forKey: UserDefaultsKey.quickStartConsonant)
         defaults.set(quickEndConsonant, forKey: UserDefaultsKey.quickEndConsonant)
         defaults.set(rememberCode, forKey: UserDefaultsKey.rememberCode)
@@ -369,6 +391,8 @@ final class InputMethodState {
         upperCaseFirstChar = Defaults.upperCaseFirstChar
         allowConsonantZFWJ = Defaults.allowConsonantZFWJ
         customConsonants = PHTVCustomConsonants.defaults
+        skipVietnameseForPrefixes = Defaults.skipVietnameseForPrefixes
+        skipVietnamesePrefixes = PHTVEnglishPrefixes.defaults
         quickStartConsonant = Defaults.quickStartConsonant
         quickEndConsonant = Defaults.quickEndConsonant
         rememberCode = Defaults.rememberCode

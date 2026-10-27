@@ -63,6 +63,13 @@ enum SettingsBackupSchema {
                     else { throw BackupError.invalid(key) }
                     output[key] = PHTVCustomConsonants.normalized(strings)
                     continue
+                } else if key == UserDefaultsKey.skipVietnamesePrefixes {
+                    let strings = values.compactMap { if case .string(let s) = $0 { return s }; return nil }
+                    guard strings.count == values.count, strings.count <= PHTVEnglishPrefixes.maximumCount,
+                          strings.allSatisfy({ PHTVEnglishPrefixes.normalizedEntry($0) != nil })
+                    else { throw BackupError.invalid(key) }
+                    output[key] = PHTVEnglishPrefixes.normalized(strings)
+                    continue
                 } else if key == "com.phtv.recentEmojis" {
                     guard values.allSatisfy({ if case .string(let s) = $0 { return s.count <= 64 }; return false })
                     else { throw BackupError.invalid(key) }

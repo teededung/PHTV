@@ -140,6 +140,19 @@ struct TypingSettingsView: View {
                         SettingsDivider()
 
                         SettingsToggleRow(
+                            icon: "character.phonetic",
+                            iconColor: .accentColor,
+                            title: "Bỏ qua dấu theo chữ cái đầu",
+                            subtitle: "Không bỏ dấu tiếng Việt khi từ bắt đầu bằng các chữ cái hoặc cụm này",
+                            isOn: bindable.skipVietnameseForPrefixes
+                        )
+                        PHTVEnglishPrefixesEditor(entries: bindable.skipVietnamesePrefixes)
+                            .disabled(!appState.skipVietnameseForPrefixes)
+                            .opacity(appState.skipVietnameseForPrefixes ? 1 : 0.55)
+
+                        SettingsDivider()
+
+                        SettingsToggleRow(
                             icon: "hare.fill",
                             iconColor: .accentColor,
                             title: "Gõ nhanh Telex",

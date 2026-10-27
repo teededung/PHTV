@@ -143,6 +143,9 @@ private final class RuntimeSettingsStateBox: @unchecked Sendable {
     var customConsonantSpellingRows = PHTVCustomConsonants.spellingRows(PHTVCustomConsonants.defaults)
     var customConsonants: [String] = PHTVCustomConsonants.defaults
     var customConsonantRows: [[UInt16]] = PHTVCustomConsonants.rows(PHTVCustomConsonants.defaults)
+    var skipVietnameseForPrefixes: Int32 = Defaults.skipVietnameseForPrefixes ? 1 : 0
+    var skipVietnamesePrefixes: [String] = PHTVEnglishPrefixes.defaults
+    var skipVietnamesePrefixRows: [[UInt16]] = PHTVEnglishPrefixes.rows(PHTVEnglishPrefixes.defaults)
     var quickStartConsonant: Int32 = 0
     var quickEndConsonant: Int32 = 0
     var upperCaseFirstChar: Int32 = 0
@@ -276,6 +279,11 @@ private var runtimeFreeMark: Int32 {
 private var runtimeAllowConsonantZFWJ: Int32 {
     get { withRuntimeSettings { $0.allowConsonantZFWJ } }
     set { withRuntimeSettings { $0.allowConsonantZFWJ = newValue } }
+}
+
+private var runtimeSkipVietnameseForPrefixes: Int32 {
+    get { withRuntimeSettings { $0.skipVietnameseForPrefixes } }
+    set { withRuntimeSettings { $0.skipVietnameseForPrefixes = newValue } }
 }
 
 private var runtimeQuickStartConsonant: Int32 {
@@ -1230,6 +1238,27 @@ final class PHTVEngineRuntimeFacade: NSObject {
         }
     }
 
+    class func skipVietnameseForPrefixes() -> Int32 {
+        runtimeSkipVietnameseForPrefixes
+    }
+
+    class func setSkipVietnameseForPrefixes(_ value: Int32) {
+        runtimeSkipVietnameseForPrefixes = value
+    }
+
+    class func skipVietnamesePrefixes() -> [String] {
+        withRuntimeSettings { $0.skipVietnamesePrefixes }
+    }
+
+    class func setSkipVietnamesePrefixes(_ values: [String]) {
+        let normalized = PHTVEnglishPrefixes.normalized(values)
+        let rows = PHTVEnglishPrefixes.rows(normalized)
+        withRuntimeSettings {
+            $0.skipVietnamesePrefixes = normalized
+            $0.skipVietnamesePrefixRows = rows
+        }
+    }
+
     class func quickStartConsonant() -> Int32 {
         runtimeQuickStartConsonant
     }
@@ -1428,4 +1457,8 @@ func phtvRuntimeCustomConsonantRows() -> [[UInt16]] {
 
 func phtvRuntimeConsonantSpellingRows() -> [[UInt16]] {
     withRuntimeSettings { $0.allowConsonantZFWJ != 0 ? $0.customConsonantSpellingRows : PHTVCustomConsonants.standardRows }
+}
+
+func phtvRuntimeSkipVietnamesePrefixRows() -> [[UInt16]] {
+    withRuntimeSettings { $0.skipVietnameseForPrefixes != 0 ? $0.skipVietnamesePrefixRows : [] }
 }

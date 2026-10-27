@@ -41,6 +41,8 @@ final class EngineRegressionTests: XCTestCase {
         PHTVEngineRuntimeFacade.setFreeMark(0)
         PHTVEngineRuntimeFacade.setAllowConsonantZFWJ(1)
         PHTVEngineRuntimeFacade.setCustomConsonants(PHTVCustomConsonants.defaults)
+        PHTVEngineRuntimeFacade.setSkipVietnameseForPrefixes(0)
+        PHTVEngineRuntimeFacade.setSkipVietnamesePrefixes(PHTVEnglishPrefixes.defaults)
         PHTVEngineRuntimeFacade.setQuickStartConsonant(0)
         PHTVEngineRuntimeFacade.setQuickEndConsonant(0)
         PHTVEngineRuntimeFacade.setUseMacro(0)
@@ -157,6 +159,25 @@ final class EngineRegressionTests: XCTestCase {
         XCTAssertEqual(runtimeRenderedToken("tieengs vieetj"), "tiếng việt")
         PHTVEngineRuntimeFacade.setQuickStartConsonant(1)
         XCTAssertEqual(runtimeRenderedToken("fas "), "phá ")
+    }
+
+    func testSkipVietnameseForConfiguredPrefixesWhileTyping() {
+        defer {
+            PHTVEngineRuntimeFacade.setSkipVietnameseForPrefixes(0)
+            PHTVEngineRuntimeFacade.setSkipVietnamesePrefixes(PHTVEnglishPrefixes.defaults)
+        }
+        PHTVEngineRuntimeFacade.setSkipVietnameseForPrefixes(1)
+        PHTVEngineRuntimeFacade.setSkipVietnamesePrefixes(["W", "F", "CL", "ST", "STR", "EX"])
+        // Mid-word (before space) must stay raw ASCII without applying Telex marks or standalone ư
+        XCTAssertEqual(runtimeRenderedToken("w"), "w")
+        XCTAssertEqual(runtimeRenderedToken("water"), "water")
+        XCTAssertEqual(runtimeRenderedToken("for"), "for")
+        XCTAssertEqual(runtimeRenderedToken("class"), "class")
+        XCTAssertEqual(runtimeRenderedToken("status"), "status")
+        XCTAssertEqual(runtimeRenderedToken("street"), "street")
+        XCTAssertEqual(runtimeRenderedToken("extra"), "extra")
+        // Standard Vietnamese words still receive diacritics normally
+        XCTAssertEqual(runtimeRenderedToken("tieengs vieetj"), "tiếng việt")
     }
 
     func testUppercaseDAbbreviationDoesNotProtectEnglishWordsWithVowels() {

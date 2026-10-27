@@ -44,4 +44,14 @@ final class CustomConsonantsTests: XCTestCase {
         restored.loadSettings()
         XCTAssertEqual(restored.customConsonants, ["DZ", "BL"])
     }
+
+    func testEnglishPrefixesNormalizationAndBackup() throws {
+        XCTAssertEqual(PHTVEnglishPrefixes.normalized([" w ", "cl", "W", "str", "http"]), ["W", "CL", "STR", "HTTP"])
+        for invalid in ["", "ABCDE", "W1", "Đ", "W F", "🙂"] {
+            XCTAssertNil(PHTVEnglishPrefixes.normalizedEntry(invalid), invalid)
+        }
+        let key = UserDefaultsKey.skipVietnamesePrefixes
+        let result = try SettingsBackupSchema.normalizedSettings([key: .array([.string("w"), .string("str"), .string("ex")])])
+        XCTAssertEqual(result[key] as? [String], ["W", "STR", "EX"])
+    }
 }

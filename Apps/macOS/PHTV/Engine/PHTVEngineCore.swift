@@ -109,6 +109,7 @@ final class PHTVVietnameseEngine {
 
     // MARK: Runtime snapshots
     var runtimeConsonantRows = PHTVCustomConsonants.spellingRows(PHTVCustomConsonants.defaults)
+    var runtimeSkipVietnamesePrefixRows = PHTVEnglishPrefixes.rows(PHTVEnglishPrefixes.defaults)
     var runtimeInputTypeSnapshot: Int32 = 0
     var runtimeCodeTableSnapshot: Int32 = 0
 
@@ -203,8 +204,56 @@ final class PHTVVietnameseEngine {
 
     func refreshRuntimeLayoutSnapshot() {
         runtimeConsonantRows = phtvRuntimeConsonantSpellingRows()
+        runtimeSkipVietnamesePrefixRows = phtvRuntimeSkipVietnamesePrefixRows()
         runtimeInputTypeSnapshot = phtvRuntimeInputTypeValue()
         runtimeCodeTableSnapshot = phtvRuntimeCodeTableValue()
+    }
+
+    func matchesSkipVietnamesePrefix() -> Bool {
+        guard !runtimeSkipVietnamesePrefixRows.isEmpty else { return false }
+        if stateIdx > 0 && stateIdx >= idx {
+            let count = min(stateIdx, 4)
+            var rawKeys: [UInt16] = []
+            rawKeys.reserveCapacity(count)
+            for i in 0..<count {
+                let code = UInt16(keyStates[i] & UInt32(CHAR_MASK))
+                guard isEnglishLetterKeyCode(code) else { return false }
+                rawKeys.append(code)
+            }
+            if PHTVEnglishPrefixes.matchesPrefix(rawKeys, rows: runtimeSkipVietnamesePrefixRows) {
+                return true
+            }
+        }
+        if idx > 0 && !hasVietnameseTransformsInTypingWord(idx) {
+            let count = min(idx, 4)
+            var wordKeys: [UInt16] = []
+            wordKeys.reserveCapacity(count)
+            for i in 0..<count {
+                let code = chr(i)
+                guard isEnglishLetterKeyCode(code) else { return false }
+                wordKeys.append(code)
+            }
+            return PHTVEnglishPrefixes.matchesPrefix(wordKeys, rows: runtimeSkipVietnamesePrefixRows)
+        }
+        return false
+    }
+
+    func prepareImmediateSkipVietnamesePrefixRestore() -> Int? {
+        guard stateIdx > 0, idx > 0, stateIdx <= ENGINE_MAX_BUFF else { return nil }
+        guard hasVietnameseTransformsInTypingWord(idx) || idx != stateIdx - 1 || hasQuickTelexExpansionInSession else {
+            return nil
+        }
+        let restoreCount = stateIdx
+        hCode = HookCodeState.willProcess.rawValue
+        hBPC = idx
+        hNCC = restoreCount
+        hExt = 3
+        for i in 0..<restoreCount {
+            let rawKey = keyStates[i]
+            typingWord[i] = rawKey
+            hData[restoreCount - 1 - i] = rawKey
+        }
+        return restoreCount
     }
 
     func detectorIsEnglishWord(_ keyStatesPtr: [UInt32], _ count: Int) -> Bool {
@@ -2601,7 +2650,7 @@ final class PHTVVietnameseEngine {
             hBPC = hMacroKey.count
             hasHandledMacro = true
         } else if (phtvRuntimeQuickStartConsonantEnabled() != 0 || phtvRuntimeQuickEndConsonantEnabled() != 0) &&
-                    !tempDisableKey && isMacroBreakCode(data) && checkQuickConsonant() {
+                    !tempDisableKey && !autoEnglishSessionActive && isMacroBreakCode(data) && checkQuickConsonant() {
             // Quick consonant expansions take priority over auto-restore so shorthand
             // typing is not converted back to raw English first.
         } else if autoEnglishSessionActive {
@@ -2696,7 +2745,7 @@ final class PHTVVietnameseEngine {
             hCode = HookCodeState.replaceMacro.rawValue
             hBPC = hMacroKey.count; spaceCount += 1
         } else if (phtvRuntimeQuickStartConsonantEnabled() != 0 || phtvRuntimeQuickEndConsonantEnabled() != 0) &&
-                    !tempDisableKey && checkQuickConsonant() {
+                    !tempDisableKey && !autoEnglishSessionActive && checkQuickConsonant() {
             spaceCount += 1
         } else if autoEnglishSessionActive {
             // The raw English word is already visible and synchronized with
@@ -2849,6 +2898,14 @@ final class PHTVVietnameseEngine {
         }
 
         insertState(data, isCaps)
+        var immediatePrefixRestoreCount: Int? = nil
+        if !autoEnglishSessionActive && matchesSkipVietnamesePrefix() {
+            if let restored = prepareImmediateSkipVietnamesePrefixRestore() {
+                immediatePrefixRestoreCount = restored
+            } else {
+                autoEnglishSessionActive = true
+            }
+        }
         let wasAutoEnglishSessionActive = autoEnglishSessionActive
 
         // Spell gate (EngineKeyHandleEventMainFlowSpellGate.inc)
@@ -2901,9 +2958,9 @@ final class PHTVVietnameseEngine {
         let bypassSpecialForEnglishConflict = wasAutoEnglishSessionActive
             ? false
             : shouldBypassSpecialKeyForEnglishWordConflict(data)
-        let immediateEnglishRestoreCount = (wasAutoEnglishSessionActive || bypassSpecialForEnglishConflict)
+        let immediateEnglishRestoreCount = immediatePrefixRestoreCount ?? ((wasAutoEnglishSessionActive || bypassSpecialForEnglishConflict)
             ? nil
-            : prepareImmediateAutoEnglishRestore(for: data)
+            : prepareImmediateAutoEnglishRestore(for: data))
 
         if wasAutoEnglishSessionActive {
             hCode = HookCodeState.doNothing.rawValue; hBPC = 0; hNCC = 0; hExt = 3

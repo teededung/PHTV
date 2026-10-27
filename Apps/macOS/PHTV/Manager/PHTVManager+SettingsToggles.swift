@@ -129,6 +129,7 @@ import Foundation
             "useSmartSwitchKey": NSNumber(value: PHTVEngineRuntimeFacade.isSmartSwitchKeyEnabled() ? 1 : 0),
             "upperCaseFirstChar": NSNumber(value: PHTVEngineRuntimeFacade.upperCaseFirstChar()),
             "allowConsonantZFWJ": NSNumber(value: PHTVEngineRuntimeFacade.allowConsonantZFWJ()),
+            "skipVietnameseForPrefixes": NSNumber(value: PHTVEngineRuntimeFacade.skipVietnameseForPrefixes()),
             "quickStartConsonant": NSNumber(value: PHTVEngineRuntimeFacade.quickStartConsonant()),
             "quickEndConsonant": NSNumber(value: PHTVEngineRuntimeFacade.quickEndConsonant()),
             "rememberCode": NSNumber(value: PHTVEngineRuntimeFacade.rememberCode()),

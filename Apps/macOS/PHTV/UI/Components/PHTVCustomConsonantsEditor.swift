@@ -81,3 +81,85 @@ struct PHTVCustomConsonantsEditor: View {
         inputFocused = true
     }
 }
+
+struct PHTVEnglishPrefixesEditor: View {
+    @Binding var entries: [String]
+    @State private var draft = ""
+    @FocusState private var inputFocused: Bool
+
+    private var candidate: String? { PHTVEnglishPrefixes.normalizedEntry(draft) }
+    private var validation: String? {
+        if entries.count >= PHTVEnglishPrefixes.maximumCount { return "Tối đa \(PHTVEnglishPrefixes.maximumCount) tiền tố." }
+        guard !draft.isEmpty else { return nil }
+        guard let candidate else { return "Nhập 1–4 chữ cái không dấu (A–Z), ví dụ W, CL, STR." }
+        return entries.contains(candidate) ? "Tiền tố này đã có trong danh sách." : nil
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            if entries.isEmpty {
+                Text("Chưa có tiền tố bỏ qua dấu.")
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+            } else {
+                LazyVGrid(columns: [GridItem(.adaptive(minimum: 56, maximum: 72), spacing: 6)], alignment: .leading, spacing: 6) {
+                    ForEach(entries, id: \.self) { entry in
+                        HStack(spacing: 4) {
+                            Text(entry).font(.system(.callout, design: .monospaced).weight(.medium))
+                            Spacer(minLength: 0)
+                            Button {
+                                entries.removeAll { $0 == entry }
+                            } label: {
+                                Image(systemName: "xmark")
+                                    .font(.system(size: 9, weight: .semibold))
+                                    .foregroundStyle(.secondary)
+                                    .frame(width: 20, height: 20)
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityLabel("Xoá tiền tố \(entry)")
+                            .help("Xoá \(entry)")
+                        }
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 3)
+                        .background(Color.secondary.opacity(0.08), in: Capsule())
+                    }
+                }
+            }
+
+            SettingsFlowLayout {
+                TextField("W, CL, STR", text: $draft)
+                    .textFieldStyle(.roundedBorder)
+                    .frame(width: 110)
+                    .focused($inputFocused)
+                    .accessibilityLabel("Tiền tố mới, 1 đến 4 chữ cái")
+                    .help("Nhập 1–4 chữ cái không dấu (A–Z). Không phân biệt hoa/thường.")
+                    .onSubmit(addEntry)
+                Button(action: addEntry) { Label("Thêm", systemImage: "plus") }
+                    .disabled(candidate == nil || validation != nil)
+                Button("Mặc định") {
+                    entries = PHTVEnglishPrefixes.defaults
+                    draft = ""
+                }
+                .disabled(entries == PHTVEnglishPrefixes.defaults)
+                .help("Khôi phục bộ tiền tố tiếng Anh phổ biến")
+                .accessibilityLabel("Khôi phục tiền tố mặc định")
+            }
+            .controlSize(.small)
+            if let validation {
+                Text(validation)
+                    .font(.caption)
+                    .foregroundStyle(.orange)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .padding(.top, 2)
+        .padding(.bottom, 8)
+    }
+
+    private func addEntry() {
+        guard let candidate, validation == nil else { return }
+        entries.append(candidate)
+        draft = ""
+        inputFocused = true
+    }
+}

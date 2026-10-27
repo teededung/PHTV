@@ -62,6 +62,14 @@ extension AppState {
         get { trackedSubstate(inputMethodState.allowConsonantZFWJ) }
         set { inputMethodState.allowConsonantZFWJ = newValue }
     }
+    var skipVietnameseForPrefixes: Bool {
+        get { trackedSubstate(inputMethodState.skipVietnameseForPrefixes) }
+        set { inputMethodState.skipVietnameseForPrefixes = newValue }
+    }
+    var skipVietnamesePrefixes: [String] {
+        get { trackedSubstate(inputMethodState.skipVietnamesePrefixes) }
+        set { inputMethodState.skipVietnamesePrefixes = PHTVEnglishPrefixes.normalized(newValue) }
+    }
 
     var quickStartConsonant: Bool {
         get { trackedSubstate(inputMethodState.quickStartConsonant) }

@@ -31,6 +31,9 @@ struct SettingsItem: Identifiable {
             title: "Tự động khôi phục từ", iconName: "textformat.abc.dottedunderline", tab: .typing,
             keywords: ["auto restore english", "tiếng anh", "english word", "tên riêng", "thuật ngữ", "terminal", "tẻminal", "khôi phục", "không phải tiếng việt", "chỉ tiếng anh"]),
         SettingsItem(
+            title: "Bỏ qua dấu theo chữ cái đầu", iconName: "character.phonetic", tab: .typing,
+            keywords: ["prefix", "tiền tố", "chữ cái đầu", "bỏ qua dấu", "tiếng anh", "w", "f", "j", "z", "cl", "st", "pr"]),
+        SettingsItem(
             title: "Kiểm tra chính tả", iconName: "textformat.abc.dottedunderline", tab: .typing,
             keywords: ["spell check", "chính tả", "kiểm tra", "đúng", "sai", "correction"]),
         SettingsItem(

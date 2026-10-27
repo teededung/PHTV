@@ -149,6 +149,7 @@ private func phtvSettingsBridgeLiveLog(_ message: String) {
         }
 
         let oldCustomConsonants = PHTVEngineRuntimeFacade.customConsonants()
+        let oldSkipVietnamesePrefixes = PHTVEngineRuntimeFacade.skipVietnamesePrefixes()
         let reloadResult = reloadRuntimeSettingsFromUserDefaults()
         let old = reloadResult.oldSnapshot
         let new = reloadResult.newSnapshot
@@ -177,6 +178,7 @@ private func phtvSettingsBridgeLiveLog(_ message: String) {
             || changed("useSmartSwitchKey")
             || changed("upperCaseFirstChar")
             || changed("allowConsonantZFWJ")
+            || changed("skipVietnameseForPrefixes")
             || changed("quickStartConsonant")
             || changed("quickEndConsonant")
             || changed("rememberCode")
@@ -196,6 +198,7 @@ private func phtvSettingsBridgeLiveLog(_ message: String) {
 
         let changedDockVisibility = changed("showIconOnDock")
         let changedCustomConsonants = oldCustomConsonants != PHTVEngineRuntimeFacade.customConsonants()
+            || oldSkipVietnamesePrefixes != PHTVEngineRuntimeFacade.skipVietnamesePrefixes()
         let changedSessionSettings = changed1 || changed2 || changedRestorePause || changedEmoji || changedCustomConsonants
         let changedAny = changedSessionSettings || changedDockVisibility
 

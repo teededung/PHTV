@@ -168,6 +168,8 @@ private let phtvCoreSettingsLogState = PHTVCoreSettingsLogState()
             UserDefaultsKey.upperCaseFirstChar,
             UserDefaultsKey.allowConsonantZFWJ,
             UserDefaultsKey.customConsonants,
+            UserDefaultsKey.skipVietnameseForPrefixes,
+            UserDefaultsKey.skipVietnamesePrefixes,
             UserDefaultsKey.quickStartConsonant,
             UserDefaultsKey.quickEndConsonant,
             UserDefaultsKey.rememberCode,
@@ -405,6 +407,15 @@ private let phtvCoreSettingsLogState = PHTVCoreSettingsLogState()
         )
         PHTVEngineRuntimeFacade.setCustomConsonants(
             defaults.stringArray(forKey: UserDefaultsKey.customConsonants) ?? PHTVCustomConsonants.defaults)
+        PHTVEngineRuntimeFacade.setSkipVietnameseForPrefixes(
+            phtv_readIntWithFallback(
+                defaults: defaults,
+                key: UserDefaultsKey.skipVietnameseForPrefixes,
+                fallback: Defaults.skipVietnameseForPrefixes ? 1 : 0
+            )
+        )
+        PHTVEngineRuntimeFacade.setSkipVietnamesePrefixes(
+            defaults.stringArray(forKey: UserDefaultsKey.skipVietnamesePrefixes) ?? PHTVEnglishPrefixes.defaults)
         PHTVEngineRuntimeFacade.setQuickStartConsonant(
             phtv_readIntWithFallback(
                 defaults: defaults,
@@ -586,6 +597,10 @@ private let phtvCoreSettingsLogState = PHTVCoreSettingsLogState()
         defaults.set(Defaults.allowConsonantZFWJ, forKey: UserDefaultsKey.allowConsonantZFWJ)
         defaults.set(PHTVCustomConsonants.defaults, forKey: UserDefaultsKey.customConsonants)
         PHTVEngineRuntimeFacade.setCustomConsonants(PHTVCustomConsonants.defaults)
+        PHTVEngineRuntimeFacade.setSkipVietnameseForPrefixes(Defaults.skipVietnameseForPrefixes ? 1 : 0)
+        defaults.set(Defaults.skipVietnameseForPrefixes, forKey: UserDefaultsKey.skipVietnameseForPrefixes)
+        defaults.set(PHTVEnglishPrefixes.defaults, forKey: UserDefaultsKey.skipVietnamesePrefixes)
+        PHTVEngineRuntimeFacade.setSkipVietnamesePrefixes(PHTVEnglishPrefixes.defaults)
 
         PHTVEngineRuntimeFacade.setQuickStartConsonant(Defaults.quickStartConsonant ? 1 : 0)
         defaults.set(Defaults.quickStartConsonant, forKey: UserDefaultsKey.quickStartConsonant)

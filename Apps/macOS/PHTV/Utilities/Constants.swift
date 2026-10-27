@@ -63,6 +63,8 @@ enum UserDefaultsKey {
     static let upperCaseFirstChar = "UpperCaseFirstChar"
     static let allowConsonantZFWJ = "vAllowConsonantZFWJ"
     static let customConsonants = "customConsonants"
+    static let skipVietnameseForPrefixes = "vSkipVietnameseForPrefixes"
+    static let skipVietnamesePrefixes = "skipVietnamesePrefixes"
     static let quickStartConsonant = "vQuickStartConsonant"
     static let quickEndConsonant = "vQuickEndConsonant"
     static let rememberCode = "vRememberCode"
@@ -521,6 +523,7 @@ enum Defaults {
     static let useSmartSwitchKey = true
     static let upperCaseFirstChar = false
     static let allowConsonantZFWJ = true
+    static let skipVietnameseForPrefixes = true
     static let quickStartConsonant = false
     static let quickEndConsonant = false
     static let rememberCode = true
@@ -780,6 +783,8 @@ final class SettingsBootstrap: NSObject {
             UserDefaultsKey.upperCaseFirstChar: Defaults.upperCaseFirstChar,
             UserDefaultsKey.allowConsonantZFWJ: Defaults.allowConsonantZFWJ,
             UserDefaultsKey.customConsonants: PHTVCustomConsonants.defaults,
+            UserDefaultsKey.skipVietnameseForPrefixes: Defaults.skipVietnameseForPrefixes,
+            UserDefaultsKey.skipVietnamesePrefixes: PHTVEnglishPrefixes.defaults,
             UserDefaultsKey.quickStartConsonant: Defaults.quickStartConsonant,
             UserDefaultsKey.quickEndConsonant: Defaults.quickEndConsonant,
             UserDefaultsKey.rememberCode: Defaults.rememberCode,
